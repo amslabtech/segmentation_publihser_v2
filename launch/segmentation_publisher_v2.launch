@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="use_subscribed_images_stamp" default="true"/>
+  <arg name="model_name" default="hardnet"/>
+  <arg name="num_classes" default="20"/>
+  <arg name="model_path" default="../FCHarDNet/weights/hardnet70_cityscapes_model_2.pkl"/>
+  <arg name="bn_fusion" default="true"/>
+  <arg name="update_bn" default="fault"/>
+  <arg name="input_size" default="1024"/>
+
+  <node pkg="segmentation_publisher_v2" type="FCHarDNet_ros.py" name="segmentation_publisher" ns="recognition">
+    <param name="USE_SUBSCRIBED_IMAGES_STAMP" value="$(arg use_subscribed_images_stamp)"/>
+    <param name="MODEL_NAME" value="$(arg model_name)"/>
+    <param name="NUM_CLASSES" value="$(arg num_classes)"/>
+    <param name="MODEL_PATH" value="$(arg model_path)"/>
+    <param name="BN_FUSION" value="$(arg bn_fusion)"/>
+    <param name="UPDATE_BN" value="$(arg update_bn)"/>
+    <param name="INPUT_SIZE" value="$(arg input_size)"/>
+	<remap from="/fchardnet/segmented_image" to="/fchardnet/segmented_image"/>
+    <remap from="/usb_cam/image_raw" to="/usb_cam/image_raw"/>
+  </node>
+
+</launch>

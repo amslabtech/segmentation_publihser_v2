@@ -1,0 +1,3 @@
+[submodule "FCHarDNet"]
+	path = FCHarDNet
+	url = https://github.com/PingoLH/FCHarDNet
