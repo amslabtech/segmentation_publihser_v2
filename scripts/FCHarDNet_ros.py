@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import rospy
 from sensor_msgs.msg import Image as RosImage
 
@@ -10,7 +11,13 @@ import numpy as np
 
 from torch.utils import data
 
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../FCHarDNet'))
+print(sys.version)
+#sys.path.append('/home/amsl/ros_catkin_ws/src/segmentation_publisher_v2')
 from FCHarDNet.pytorch_bn_fusion.bn_fusion import fuse_bn_recursively
+
+#sys.path.append('/home/amsl/ros_catkin_ws/src/segmentation_publisher_v2')
 from FCHarDNet.ptsemseg.models import get_model
 from FCHarDNet.ptsemseg.loader import get_loader
 from FCHarDNet.ptsemseg.loader.cityscapes_loader import decode_segmap

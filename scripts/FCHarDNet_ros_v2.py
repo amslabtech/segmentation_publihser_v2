@@ -4,7 +4,7 @@ import rospy
 from sensor_msgs.msg import Image as RosImage
 
 import torch
-import torch.nn
+import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
@@ -330,24 +330,16 @@ class Semantic_segmentation:
                     ]
 
         rospy.init_node('semantic_segmentation', anonymous=True)
-        if rospy.has_param("USE_SUBSCRIBED_IMAGES_STAMP"):
-            self.use_subscribed_images_stamp = rospy.get_param("USE_SUBSCRIBED_IMAGES_STAMP")
-        if rospy.has_param("MODEL_NAME"):
-            self.model_name = rospy.get_param("MODEL_NAME")
-        if rospy.has_param("NUM_CLASSES"):
-            self.num_classes = rospy.get_param("NUM_CLASSES")
-        if rospy.has_param("MODEL_PATH"):
-            self.model_path = rospy.get_param("MODEL_PATH")
-        if rospy.has_param("BN_FUSION"):
-            self.bn_fusion = rospy.get_param("BN_FUSION")
-        if rospy.has_param("UPDATE_BN"):
-            self.update_bn = rospy.get_param("UPDATE_BN")
-        if rospy.has_param("INPUT_SIZE"):
-            self.input_size = rospy.get_param("INPUT_SIZE")
-        
+        self.use_subscribed_images_stamp = rospy.get_param("/recognition/segmentation_publisher/USE_SUBSCRIBED_IMAGES_STAMP")
+        self.model_name = rospy.get_param("/recognition/segmentation_publisher/MODEL_NAME")
+        self.num_classes = rospy.get_param("/recognition/segmentation_publisher/NUM_CLASSES")
+        self.model_path = rospy.get_param("/recognition/segmentation_publisher/MODEL_PATH")
+        self.bn_fusion = rospy.get_param("/recognition/segmentation_publisher/BN_FUSION")
+        self.update_bn = rospy.get_param("/recognition/segmentation_publisher/UPDATE_BN")
+        self.input_size = rospy.get_param("/recognition/segmentation_publisher/INPUT_SIZE")
         self.label_colours = dict(zip(range(self.num_classes), self.colors))
 
-        self.model = hardnet.to(self.device)
+        self.model = hardnet(self.num_classes).to(self.device)
         self.state = convert_state_dict(torch.load(self.model_path)["model_state"])
         self.model.load_state_dict(self.state)
         
@@ -365,19 +357,20 @@ class Semantic_segmentation:
         self.model.to(self.device)
 
     def decode_segmap(self, temp):
-    r = temp.copy()
-    g = temp.copy()
-    b = temp.copy()
-    for l in range(0, self.num_classes):
-        r[temp == l] = self.abel_colours[l][0]
-        g[temp == l] = self.label_colours[l][1]
-        b[temp == l] = self.label_colours[l][2]
-
-    rgb = np.zeros((temp.shape[0], temp.shape[1], 3))
-    rgb[:, :, 0] = r / 255.0
-    rgb[:, :, 1] = g / 255.0
-    rgb[:, :, 2] = b / 255.0
-    return rgb
+        r = temp.copy()
+        g = temp.copy()
+        b = temp.copy()
+        for l in range(0, self.num_classes):
+            r[temp == l] = self.abel_colours[l][0]
+            g[temp == l] = self.label_colours[l][1]
+            b[temp == l] = self.label_colours[l][2]
+        
+        rgb = np.zeros((temp.shape[0], temp.shape[1], 3))
+        rgb[:, :, 0] = r / 255.0
+        rgb[:, :, 1] = g / 255.0
+        rgb[:, :, 2] = b / 255.0
+        
+        return rgb
 
     def image_callback(self, img):
         try:
